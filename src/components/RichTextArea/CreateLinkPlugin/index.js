@@ -37,7 +37,7 @@ const createLinkPlugin = (config = {}) => {
   }
 
   // Update link
-  const update = (blockKey, entityKey, decoratedText, text, link) => {
+  const update = (blockKey, entityKey, decoratedText, text, url) => {
     const data = store
       .getEditorState()
       .getCurrentContent()
@@ -68,10 +68,10 @@ const createLinkPlugin = (config = {}) => {
 
     let newEditorState = editorState
 
-    if (link !== data.link) {
-      if (link) {
+    if (url !== data.url) {
+      if (url) {
         newEditorState = mergeEntityData(newEditorState, entityKey, {
-          link
+          url
         })
       } else {
         entityKey = null
@@ -93,7 +93,7 @@ const createLinkPlugin = (config = {}) => {
         Modifier.replaceText(
           newEditorState.getCurrentContent(),
           entitySelection,
-          text || link,
+          text || url,
           null,
           entityKey
         ),
@@ -123,9 +123,9 @@ const createLinkPlugin = (config = {}) => {
             {...props}
             currentEntityKey={currentEntityKey}
             onRemove={remove}
-            onUpdate={(text, link) => {
+            onUpdate={(text, url) => {
               const blockKey = offsetKey.split('-')[0]
-              update(blockKey, entityKey, decoratedText, text, link)
+              update(blockKey, entityKey, decoratedText, text, url)
             }}
             setReadOnly={store.setReadOnly}
             autoTrigger={autoTrigger}

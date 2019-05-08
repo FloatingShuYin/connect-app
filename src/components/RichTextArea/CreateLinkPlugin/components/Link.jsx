@@ -113,7 +113,7 @@ class Link extends React.Component {
     const data = entity.getData()
     this.setState({
       inputText: decoratedText,
-      inputLink: data.link
+      inputLink: data.url
     })
 
     if (this.props.autoTrigger) {
@@ -153,11 +153,10 @@ class Link extends React.Component {
     } = this.props
     const entity = contentState.getEntity(entityKey)
     const data = entity.getData()
-
     const smallBubble = (
       <div className="linkbubble-small">
-        <a href={data.link} target="_blank">
-          {data.link}
+        <a href={data.url} target="_blank">
+          {data.url}
         </a>
         <span>
           {' – '}
@@ -172,8 +171,8 @@ class Link extends React.Component {
               })
             }}
           >
-            {this.state.inputText.trim() === '' ||
-            this.state.inputLink.includes(this.state.inputText)
+            {this.state.inputText.trim() === '' || (this.state.inputLink !== '' &&
+            this.state.inputLink.includes(this.state.inputText))
               ? 'Add title'
               : 'Change'}
           </span>
@@ -287,7 +286,7 @@ class Link extends React.Component {
         positionKey={decoratedText}
         bubble={
           <span>
-            {data.link !== '' &&
+            {data.url !== '' &&
             this.state.isSmallBubble &&
             !this.state.isBigBubble
               ? smallBubble
@@ -298,7 +297,7 @@ class Link extends React.Component {
         {decoratedText !== ' ' ? (
           <a
             className="linkbubble-link"
-            href={data.link}
+            href={data.url}
             onClickCapture={() => {
               this.setState({
                 isSmallBubble: true,
@@ -312,7 +311,7 @@ class Link extends React.Component {
         ) : (
           <span
             className="linkbubble-link"
-            href={data.link}
+            href={data.url}
             onClickCapture={() => {
               this.setState({
                 isSmallBubble: false,

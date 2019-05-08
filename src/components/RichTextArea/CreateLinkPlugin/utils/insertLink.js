@@ -1,18 +1,18 @@
 import { EditorState, Modifier } from 'draft-js'
 
-const insertLink = (editorState, text, link) => {
+const insertLink = (editorState, text, url) => {
   const selection = editorState.getSelection()
   const contentState = editorState.getCurrentContent()
 
   let newContentState = contentState.createEntity('LINK', 'MUTABLE', {
-    link
+    url
   })
   const entityKey = newContentState.getLastCreatedEntityKey()
 
   newContentState = Modifier.replaceText(
     newContentState,
     selection,
-    text || link,
+    text || url,
     null,
     entityKey
   )

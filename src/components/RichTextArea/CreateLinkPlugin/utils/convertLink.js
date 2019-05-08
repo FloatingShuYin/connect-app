@@ -49,7 +49,7 @@ const convertLink = (editorState, preprocess) => {
 
   let newContentState = newEditorState.getCurrentContent()
   newContentState = newContentState.createEntity('LINK', 'MUTABLE', {
-    link: lastMatched.url
+    url: lastMatched.url
   })
   const entityKey = newContentState.getLastCreatedEntityKey()
   newContentState = Modifier.applyEntity(

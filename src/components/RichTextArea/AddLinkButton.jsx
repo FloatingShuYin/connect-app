@@ -75,7 +75,7 @@ class LinkModal extends React.Component {
       const contentStateWithEntity = contentState.createEntity(
         'LINK',
         'MUTABLE',
-        { url: matchedUrl }
+        { link: matchedUrl }
       )
       const entityKey = contentStateWithEntity.getLastCreatedEntityKey()
 

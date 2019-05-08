@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Editor, { composeDecorators } from 'draft-js-plugins-editor'
-import { EditorState, RichUtils } from 'draft-js'
+import { EditorState, RichUtils, convertToRaw } from 'draft-js'
 import Avatar from 'appirio-tech-react-components/components/Avatar/Avatar'
 import cn from 'classnames'
 import createImagePlugin from 'draft-js-image-plugin'
