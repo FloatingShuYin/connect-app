@@ -1,69 +1,64 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Editor, {composeDecorators} from 'draft-js-plugins-editor'
-import {EditorState, RichUtils} from 'draft-js'
+import Editor, { composeDecorators } from 'draft-js-plugins-editor'
+import { EditorState, RichUtils } from 'draft-js'
 import Avatar from 'appirio-tech-react-components/components/Avatar/Avatar'
 import cn from 'classnames'
-import createLinkPlugin from 'draft-js-link-plugin'
 import createImagePlugin from 'draft-js-image-plugin'
 import createBlockDndPlugin from 'draft-js-drag-n-drop-plugin'
+import createLinkPlugin from './CreateLinkPlugin'
 import imageUploadPlugin from './ImageUploadPlugin'
 import handleDropPlugin from './HandleDropPlugin'
 import AddLinkButton from './AddLinkButton'
-import {getCurrentEntity} from '../../helpers/draftJSHelper'
+import { getCurrentEntity } from '../../helpers/draftJSHelper'
 import markdownToState from '../../helpers/markdownToState'
 import stateToMarkdown from '../../helpers/stateToMarkdown'
-import 'draft-js-link-plugin/lib/plugin.css'
 import EditorIcons from './EditorIcons'
 import './RichTextArea.scss'
-import 'draft-js-mention-plugin/lib/plugin.css'
-import createMentionPlugin, { defaultSuggestionsFilter } from 'draft-js-mention-plugin'
+import createMentionPlugin, {
+  defaultSuggestionsFilter
+} from 'draft-js-mention-plugin'
 import _ from 'lodash'
 import { getAvatarResized } from '../../helpers/tcHelpers'
 import SwitchButton from 'appirio-tech-react-components/components/SwitchButton/SwitchButton'
 
-const linkPlugin = createLinkPlugin()
 const blockDndPlugin = createBlockDndPlugin()
 
-const decorator = composeDecorators(
-  blockDndPlugin.decorator
-)
+const decorator = composeDecorators(blockDndPlugin.decorator)
 const allowImages = false
-const plugins = [linkPlugin, blockDndPlugin]
-if (allowImages){
+const plugins = [blockDndPlugin]
+if (allowImages) {
   const imagePlugin = createImagePlugin({ decorator })
   plugins.push(handleDropPlugin)
   plugins.push(imagePlugin)
   plugins.push(imageUploadPlugin)
 }
 
-
-
 const styles = [
-  {className: 'bold', style: 'BOLD'},
-  {className: 'italic', style: 'ITALIC'},
-  {className: 'underline', style: 'UNDERLINE'}
+  { className: 'bold', style: 'BOLD' },
+  { className: 'italic', style: 'ITALIC' },
+  { className: 'underline', style: 'UNDERLINE' }
 ]
 
 const blocks = [
-  {className: 'ordered-list', style: 'ordered-list-item'},
-  {className: 'unordered-list', style: 'unordered-list-item'},
-  {className: 'quote', style: 'blockquote'},
-  {className: 'code', style: 'code-block'}
+  { className: 'ordered-list', style: 'ordered-list-item' },
+  { className: 'unordered-list', style: 'unordered-list-item' },
+  { className: 'quote', style: 'blockquote' },
+  { className: 'code', style: 'code-block' }
 ]
 
 class RichTextArea extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      editorExpanded: false, 
-      editorState: EditorState.createEmpty(), 
-      titleValue: '', 
-      suggestions: [], 
-      allSuggestions:[], 
+      editorExpanded: false,
+      editorState: EditorState.createEmpty(),
+      titleValue: '',
+      suggestions: [],
+      allSuggestions: [],
       isPrivate: false
     }
-    
+
     this.onTitleChange = this.onTitleChange.bind(this)
     this.onEditorChange = this.onEditorChange.bind(this)
     this.handleKeyCommand = this.handleKeyCommand.bind(this)
@@ -78,9 +73,11 @@ class RichTextArea extends React.Component {
     this.setUploadState = this.setUploadState.bind(this)
     this.onSearchChange = this.onSearchChange.bind(this)
     this.onAddMention = this.onAddMention.bind(this)
-    this.mentionPlugin = createMentionPlugin({mentionPrefix: '@'})
+    this.mentionPlugin = createMentionPlugin({ mentionPrefix: '@' })
+    this.linkPlugin = createLinkPlugin({ autoTrigger: true })
     this.plugins = plugins.slice(0)
     this.plugins.push(this.mentionPlugin)
+    this.plugins.push(this.linkPlugin)
   }
 
   componentDidMount() {
@@ -89,15 +86,24 @@ class RichTextArea extends React.Component {
   }
 
   componentWillMount() {
-    const suggestions = _.map(_.values(this.props.projectMembers), (e) => { return {name: e.firstName + ' ' + e.lastName, handle: e.handle, userId: e.userId, link:'/users/'+e.handle} })
+    const suggestions = _.map(_.values(this.props.projectMembers), e => {
+      return {
+        name: e.firstName + ' ' + e.lastName,
+        handle: e.handle,
+        userId: e.userId,
+        link: '/users/' + e.handle
+      }
+    })
     this.setState({
       editorExpanded: this.props.editMode,
       titleValue: this.props.title || '',
-      editorState: this.props.content ? EditorState.createWithContent(markdownToState(this.props.content)) : EditorState.createEmpty(),
+      editorState: this.props.content
+        ? EditorState.createWithContent(markdownToState(this.props.content))
+        : EditorState.createEmpty(),
       currentMDContent: this.props.content,
       oldMDContent: this.props.oldContent,
       suggestions,
-      allSuggestions:suggestions
+      allSuggestions: suggestions
     })
   }
 
@@ -106,12 +112,23 @@ class RichTextArea extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-
-    if (nextProps.isCreating !== this.props.isCreating && !nextProps.isCreating && !nextProps.hasError) {
+    if (
+      nextProps.isCreating !== this.props.isCreating &&
+      !nextProps.isCreating &&
+      !nextProps.hasError
+    ) {
       this.clearState()
-    } else if ((nextProps.isGettingComment !== this.props.isGettingComment && !nextProps.isGettingComment)
-      || (nextProps.messageId !== this.props.messageId)) {
-      const editorState = EditorState.push(this.state.editorState, nextProps.content ? markdownToState(nextProps.content) : EditorState.createEmpty().getCurrentContent())
+    } else if (
+      (nextProps.isGettingComment !== this.props.isGettingComment &&
+        !nextProps.isGettingComment) ||
+      nextProps.messageId !== this.props.messageId
+    ) {
+      const editorState = EditorState.push(
+        this.state.editorState,
+        nextProps.content
+          ? markdownToState(nextProps.content)
+          : EditorState.createEmpty().getCurrentContent()
+      )
       this.setState({
         editorExpanded: nextProps.editMode,
         titleValue: nextProps.title || '',
@@ -126,7 +143,10 @@ class RichTextArea extends React.Component {
     this.setState({
       editorExpanded: this.props.editMode,
       titleValue: '',
-      editorState: EditorState.push(this.state.editorState, EditorState.createEmpty().getCurrentContent()),
+      editorState: EditorState.push(
+        this.state.editorState,
+        EditorState.createEmpty().getCurrentContent()
+      ),
       currentMDContent: null,
       oldMDContent: null,
       isPrivate: false
@@ -142,19 +162,23 @@ class RichTextArea extends React.Component {
     let isEditor = false
     let isCloseButton = false
     const title = this.state.titleValue
-    const hasContent = (title && title.trim().length > 0) || this.state.editorState.getCurrentContent().hasText()
+    const hasContent =
+      (title && title.trim().length > 0) ||
+      this.state.editorState.getCurrentContent().hasText()
 
     do {
-      if (currNode.className
-        && currNode.className.indexOf
-        && currNode.className.indexOf('btn-close') > -1
+      if (
+        currNode.className &&
+        currNode.className.indexOf &&
+        currNode.className.indexOf('btn-close') > -1
       ) {
         isCloseButton = true
       }
 
-      if (currNode.className
-        && currNode.className.indexOf
-        && currNode.className.indexOf('btn-close-creat') > -1
+      if (
+        currNode.className &&
+        currNode.className.indexOf &&
+        currNode.className.indexOf('btn-close-creat') > -1
       ) {
         isCloseButton = true
 
@@ -173,9 +197,8 @@ class RichTextArea extends React.Component {
 
       currNode = currNode.parentNode
 
-      if (!currNode)
-        break
-    } while(currNode.tagName)
+      if (!currNode) break
+    } while (currNode.tagName)
 
     // if editor has content, do not proceed
     if (!isEditor && !isCloseButton && hasContent) {
@@ -184,18 +207,21 @@ class RichTextArea extends React.Component {
 
     const editorExpanded = isEditor && !isCloseButton
     const isPrivate = isEditor && !isCloseButton ? this.state.isPrivate : false
-    
+
     // to avoid unnecessary re-rendering on every click, only update state if any of the values is updated
-    if (editorExpanded !== this.state.editorExpanded || isPrivate !== this.state.isPrivate) {
+    if (
+      editorExpanded !== this.state.editorExpanded ||
+      isPrivate !== this.state.isPrivate
+    ) {
       this.setState({
-        editorExpanded, 
-        isPrivate,
+        editorExpanded,
+        isPrivate
       })
     }
   }
 
   handleKeyCommand(command) {
-    const {editorState} = this.state
+    const { editorState } = this.state
     const newState = RichUtils.handleKeyCommand(editorState, command)
     if (newState) {
       this.onEditorChange(newState)
@@ -208,14 +234,18 @@ class RichTextArea extends React.Component {
     if (!this.state.editorState.getSelection().getHasFocus()) {
       return
     }
-    this.onEditorChange(RichUtils.toggleBlockType(this.state.editorState, blockType))
+    this.onEditorChange(
+      RichUtils.toggleBlockType(this.state.editorState, blockType)
+    )
   }
 
   toggleInlineStyle(inlineStyle) {
     if (!this.state.editorState.getSelection().getHasFocus()) {
       return
     }
-    this.onEditorChange(RichUtils.toggleInlineStyle(this.state.editorState, inlineStyle))
+    this.onEditorChange(
+      RichUtils.toggleInlineStyle(this.state.editorState, inlineStyle)
+    )
   }
 
   onEditorChange(editorState) {
@@ -226,7 +256,9 @@ class RichTextArea extends React.Component {
       return
     }
     const prevMDContent = this.state.currentMDContent
-    const mdContent = editorState.getCurrentContent().hasText() ? stateToMarkdown(editorState.getCurrentContent()) : ''
+    const mdContent = editorState.getCurrentContent().hasText()
+      ? stateToMarkdown(editorState.getCurrentContent())
+      : ''
     this.setState({
       currentMDContent: mdContent
     })
@@ -236,9 +268,12 @@ class RichTextArea extends React.Component {
   }
 
   onTitleChange() {
-    this.setState({titleValue: this.refs.title.value})
+    this.setState({ titleValue: this.refs.title.value })
     if (this.props.onPostChange) {
-      this.props.onPostChange(this.refs.title.value, this.state.currentMDContent)
+      this.props.onPostChange(
+        this.refs.title.value,
+        this.state.currentMDContent
+      )
     }
   }
 
@@ -252,17 +287,19 @@ class RichTextArea extends React.Component {
     const content = this.state.currentMDContent
     const isPrivate = this.state.isPrivate
 
-    if ((this.props.disableTitle || title) && (this.props.disableContent || content)) {
-      this.props.onPost({title, content, isPrivate})
+    if (
+      (this.props.disableTitle || title) &&
+      (this.props.disableContent || content)
+    ) {
+      this.props.onPost({ title, content, isPrivate })
     }
   }
-  onSearchChange({value}){
+  onSearchChange({ value }) {
     this.setState({
       suggestions: defaultSuggestionsFilter(value, this.state.allSuggestions)
     })
   }
-  onAddMention() {
-  }
+  onAddMention() {}
   cancelEdit() {
     this.props.cancelEdit()
   }
@@ -273,17 +310,41 @@ class RichTextArea extends React.Component {
     this.onEditorChange(editorState)
   }
   setUploadState(uploading) {
-    this.setState({uploading})
+    this.setState({ uploading })
   }
   render() {
-    const {MentionSuggestions} = this.mentionPlugin
-    const {className, avatarUrl, authorName, titlePlaceholder, contentPlaceholder, editMode, isCreating,
-      isGettingComment, disableTitle, disableContent, expandedTitlePlaceholder, editingTopic, hasPrivateSwitch } = this.props
-    const {editorExpanded, editorState, titleValue, oldMDContent, currentMDContent, uploading, isPrivate} = this.state
-    let canSubmit = (disableTitle || titleValue.trim())
-        && (disableContent || editorState.getCurrentContent().hasText())
+    const { MentionSuggestions } = this.mentionPlugin
+    const {
+      className,
+      avatarUrl,
+      authorName,
+      titlePlaceholder,
+      contentPlaceholder,
+      editMode,
+      isCreating,
+      isGettingComment,
+      disableTitle,
+      disableContent,
+      expandedTitlePlaceholder,
+      editingTopic,
+      hasPrivateSwitch
+    } = this.props
+    const {
+      editorExpanded,
+      editorState,
+      titleValue,
+      oldMDContent,
+      currentMDContent,
+      uploading,
+      isPrivate
+    } = this.state
+    let canSubmit =
+      (disableTitle || titleValue.trim()) &&
+      (disableContent || editorState.getCurrentContent().hasText())
     if (editMode && canSubmit) {
-      canSubmit = (!disableTitle && titleValue !== this.props.oldTitle) || (!disableContent && oldMDContent !== currentMDContent)
+      canSubmit =
+        (!disableTitle && titleValue !== this.props.oldTitle) ||
+        (!disableContent && oldMDContent !== currentMDContent)
     }
     const currentStyle = editorState.getCurrentInlineStyle()
     const blockType = RichUtils.getCurrentBlockType(editorState)
@@ -291,7 +352,7 @@ class RichTextArea extends React.Component {
     const disableForCodeBlock = blockType === 'code-block'
     const editButtonText = editingTopic ? 'Update title' : 'Update post'
 
-    const Entry = (props) => {
+    const Entry = props => {
       const {
         mention,
         theme,
@@ -305,7 +366,7 @@ class RichTextArea extends React.Component {
           <div className={theme.mentionSuggestionsEntryContainer}>
             <div className={theme.mentionSuggestionsEntryContainerRight}>
               <div className={theme.mentionSuggestionsEntryText}>
-                {mention.get('name') +' - '+mention.get('handle')}
+                {mention.get('name') + ' - ' + mention.get('handle')}
               </div>
             </div>
           </div>
@@ -314,32 +375,49 @@ class RichTextArea extends React.Component {
     }
 
     return (
-      <div className={cn(className, 'rich-editor', {expanded: editorExpanded || editMode}, {'is-private': isPrivate})} ref="richEditor">
-        {(isCreating || isGettingComment) &&
-         <div className="editing-layer" />
-        }
-        {uploading &&
-         <div className="editing-layer">
-           <div>Uploading image {uploading}%</div>
-         </div>
-        }
+      <div
+        className={cn(
+          className,
+          'rich-editor',
+          { expanded: editorExpanded || editMode },
+          { 'is-private': isPrivate }
+        )}
+        ref="richEditor"
+      >
+        {(isCreating || isGettingComment) && <div className="editing-layer" />}
+        {uploading && (
+          <div className="editing-layer">
+            <div>Uploading image {uploading}%</div>
+          </div>
+        )}
         <a href="javascript:" className="btn-close" />
         <div className="modal-row">
-          {avatarUrl &&
+          {avatarUrl && (
             <div className="portrait">
-              <Avatar size={40} avatarUrl={getAvatarResized(avatarUrl, 40)} userName={authorName} />
+              <Avatar
+                size={40}
+                avatarUrl={getAvatarResized(avatarUrl, 40)}
+                userName={authorName}
+              />
             </div>
-          }
-          <div className={cn('object', {comment: disableTitle}, 'commentEdit')}>
+          )}
+          <div
+            className={cn('object', { comment: disableTitle }, 'commentEdit')}
+          >
             <input
-              ref="title" value={titleValue}
-              className={cn('new-post-title', {'hide-title': disableTitle})}
+              ref="title"
+              value={titleValue}
+              className={cn('new-post-title', { 'hide-title': disableTitle })}
               type="text"
               onChange={this.onTitleChange}
-              placeholder={editorExpanded ? expandedTitlePlaceholder : titlePlaceholder || 'Title of the post'}
+              placeholder={
+                editorExpanded
+                  ? expandedTitlePlaceholder
+                  : titlePlaceholder || 'Title of the post'
+              }
             />
             <div className="draftjs-editor tc-textarea">
-              {!disableContent && !isGettingComment &&
+              {!disableContent && !isGettingComment && (
                 <div>
                   <Editor
                     ref="editor"
@@ -358,38 +436,42 @@ class RichTextArea extends React.Component {
                     entryComponent={Entry}
                   />
                 </div>
-              }
+              )}
               <div className="textarea-footer">
                 <div className="textarea-footer-inner">
-                  {!disableContent &&
+                  {!disableContent && (
                     <div className="textarea-buttons">
-                      {styles.map((item) => (
+                      {styles.map(item => (
                         <button
                           key={item.style}
                           disabled={disableForCodeBlock}
-                          onMouseDown={(e) => {
+                          onMouseDown={e => {
                             this.toggleInlineStyle(item.style)
                             e.preventDefault()
                           }}
                         >
-                          {
-                            EditorIcons.render(item.className, currentStyle.has(item.style))
-                          }
+                          {EditorIcons.render(
+                            item.className,
+                            currentStyle.has(item.style)
+                          )}
                         </button>
                       ))}
-                      <div className="separator"/>
-                      {blocks.map((item) => (
+                      <div className="separator" />
+                      {blocks.map(item => (
                         <button
-                          disabled={item.style !== 'code-block' && disableForCodeBlock}
+                          disabled={
+                            item.style !== 'code-block' && disableForCodeBlock
+                          }
                           key={item.style}
-                          onMouseDown={(e) => {
+                          onMouseDown={e => {
                             this.toggleBlockType(item.style)
                             e.preventDefault()
                           }}
                         >
-                          {
-                            EditorIcons.render(item.className, item.style === blockType)
-                          }
+                          {EditorIcons.render(
+                            item.className,
+                            item.style === blockType
+                          )}
                         </button>
                       ))}
                       <AddLinkButton
@@ -397,46 +479,63 @@ class RichTextArea extends React.Component {
                         getEditorState={this.getEditorState}
                         setEditorState={this.setEditorState}
                         disabled={disableForCodeBlock}
-                        active={currentEntity && 'LINK' === currentEntity.getType()}
+                        active={
+                          currentEntity && 'LINK' === currentEntity.getType()
+                        }
                       />
-                      { allowImages && <div className="separator"/> }
-                      { allowImages &&
+                      {allowImages && <div className="separator" />}
+                      {allowImages && (
                         <AddLinkButton
                           type={'image'}
                           getEditorState={this.getEditorState}
                           setEditorState={this.setEditorState}
                           disabled={disableForCodeBlock}
                         />
-                      }
+                      )}
                     </div>
-                  }
+                  )}
                   <div className="tc-btns">
-                    {hasPrivateSwitch &&
+                    {hasPrivateSwitch && (
                       <SwitchButton
                         name="private-post"
-                        onChange={(evt) => this.setState({isPrivate: evt.target.checked})}
+                        onChange={evt =>
+                          this.setState({ isPrivate: evt.target.checked })
+                        }
                         checked={isPrivate}
                         label="Private"
                       />
-                    }
-                    {!editMode &&
-                      <button className="tc-btn tc-btn-default tc-btn-sm btn-close-creat">Cancel</button>
-                    }
-                    {editMode && !isCreating &&
-                    <button className="tc-btn tc-btn-default tc-btn-sm" onClick={this.cancelEdit}>
-                      Cancel
-                    </button>
-                    }
-                    { editMode &&
-                  <button className="tc-btn tc-btn-primary tc-btn-sm" onClick={this.onPost} disabled={!canSubmit }>
-                    { isCreating ? 'Saving...' : editButtonText }
-                  </button>
-                    }
-                    { !editMode &&
-                  <button className="tc-btn tc-btn-primary tc-btn-sm" onClick={this.onPost} disabled={!canSubmit }>
-                    { isCreating ? 'Posting...' : 'Post' }
-                  </button>
-                    }
+                    )}
+                    {!editMode && (
+                      <button className="tc-btn tc-btn-default tc-btn-sm btn-close-creat">
+                        Cancel
+                      </button>
+                    )}
+                    {editMode && !isCreating && (
+                      <button
+                        className="tc-btn tc-btn-default tc-btn-sm"
+                        onClick={this.cancelEdit}
+                      >
+                        Cancel
+                      </button>
+                    )}
+                    {editMode && (
+                      <button
+                        className="tc-btn tc-btn-primary tc-btn-sm"
+                        onClick={this.onPost}
+                        disabled={!canSubmit}
+                      >
+                        {isCreating ? 'Saving...' : editButtonText}
+                      </button>
+                    )}
+                    {!editMode && (
+                      <button
+                        className="tc-btn tc-btn-primary tc-btn-sm"
+                        onClick={this.onPost}
+                        disabled={!canSubmit}
+                      >
+                        {isCreating ? 'Posting...' : 'Post'}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -456,7 +555,7 @@ RichTextArea.propTypes = {
   isCreating: PropTypes.bool,
   disableTitle: PropTypes.bool,
   disableContent: PropTypes.bool,
-  editMode:PropTypes.bool,
+  editMode: PropTypes.bool,
   hasError: PropTypes.bool,
   avatarUrl: PropTypes.string,
   authorName: PropTypes.string,
@@ -470,7 +569,7 @@ RichTextArea.propTypes = {
   allMembers: PropTypes.object,
   projectMembers: PropTypes.object,
   editingTopic: PropTypes.bool,
-  hasPrivateSwitch: PropTypes.bool,
+  hasPrivateSwitch: PropTypes.bool
 }
 
 export default RichTextArea

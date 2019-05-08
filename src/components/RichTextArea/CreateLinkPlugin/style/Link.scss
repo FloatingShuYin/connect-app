@@ -1,0 +1,205 @@
+@import '~tc-ui/src/styles/tc-includes';
+@import '../../../../styles/includes';
+
+:global {
+  .linkbubble-small {
+    position: relative;
+    left: 0px;
+    padding: 12px 20px;
+    color: $tc-dark-blue-110;
+    background-color: $tc-gray-0;
+    border-color: $tc-gray-10;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px 3px rgba(60, 64, 67, .15);
+    color: $tc-silver-130;
+    font-size: 14px;
+    $tc-gray-0-space: nowrap;
+
+    a {
+      text-decoration: none;
+      color: $tc-dark-blue-110 !important;
+
+      &:hover {
+        cursor: pointer;
+        text-decoration-line: underline;
+      }
+    }
+  }
+
+  .linkbubble-change,
+  .linkbubble-remove {
+    color: $tc-dark-blue-110;
+
+    &:hover {
+      cursor: pointer;
+      text-decoration-line: underline;
+    }
+  }
+
+  .linkbubble-big {
+    position: absolute;
+    left: -20px;
+    top: 4px;
+    height: 200px;
+    width: 360px;
+    z-index: 999;
+    background-color: $tc-gray-0;
+    box-shadow: rgba(60, 64, 67, 0.15) 0px 4px 8px 3px;
+    color: $tc-silver-130;
+    font-size: 14px;
+    border: $tc-gray-10 1px solid;
+    border-radius: 8px;
+
+    &::before {
+      content: "";
+      width: 0;
+      height: 0;
+      position: absolute;
+      left: 13px;
+      top: -16px;
+      border-top: solid 8px transparent;
+      border-left: solid 8px transparent;
+      border-right: solid 8px transparent;
+      border-bottom: solid 8px $tc-gray-10;
+    }
+
+    &::after {
+      content: "";
+      width: 0;
+      height: 0;
+      position: absolute;
+      left: 13px;
+      top: -15px;
+      border-top: solid 8px transparent;
+      border-left: solid 8px transparent;
+      border-right: solid 8px transparent;
+      border-bottom: solid 8px $tc-gray-0;
+    }
+
+    .linkbubble-text-wrapper {
+      margin-bottom: 18px;
+      margin-top: 15px;
+      margin-left: 24px;
+      margin-right: 24px;
+    }
+
+    .linkbubble-link-wrapper {
+      margin-top: -5px;
+      margin-left: 24px;
+      margin-right: 24px;
+    }
+
+    .linkbubble-text-label,
+    .linkbubble-link-label {
+      background-color: $tc-gray-0;
+      box-shadow: $tc-gray-0 5px 0px 0px,
+        $tc-gray-0 -5px 0px 0px;
+      color: $tc-silver-110;
+      display: inline;
+      font-size: 12px;
+      left: 12px;
+      margin-bottom: 0px;
+      max-width: 300px;
+      height: 13px;
+      position: relative;
+      top: 8px;
+      overflow-wrap: break-word;
+      padding: 0px;
+    }
+
+    .linkbubble-text-input,
+    .linkbubble-link-input {
+      color: $tc-silver-110;
+      font-size: 14px;
+      height: 32px;
+      width: 294px;
+      border-color: $tc-gray-10;
+      border-radius: 4px;
+      margin: 0px;
+      border-width: 1px;
+      border-style: solid;
+      padding: 0px 7px;
+
+      &:focus {
+        box-shadow: none;
+        color: $tc-silver-130;
+        border-width: 1px;
+        border-style: solid;
+        border-color: $tc-dark-blue-70;
+        border-image: initial;
+        padding: 0px 7px;
+      }
+
+      &::-webkit-input-placeholder {
+        /* WebKit browsers */
+        text-transform: none;
+        color: #999;
+      }
+
+      &:-moz-placeholder {
+        /* Mozilla Firefox 4 to 18 */
+        text-transform: none;
+        color: #999;
+      }
+
+      &::-moz-placeholder {
+        /* Mozilla Firefox 19+ */
+        text-transform: none;
+        color: #999;
+      }
+
+      &:-ms-input-placeholder {
+        /* Internet Explorer 10+ */
+        text-transform: none;
+        color: #999;
+      }
+    }
+  }
+
+  .linkbubble-button-wrapper {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    width: 304px;
+    padding: 14px 0px;
+    background-color: $tc-gray-0;
+    margin-left: 30px;
+    font-size: 14px;
+
+    .linkbubble-button {
+      user-select: none;
+      min-width: 87px;
+      box-shadow: none;
+      box-sizing: border-box;
+      font-size: 14px;
+      height: 36px;
+      letter-spacing: 0.25px;
+      line-height: 16px;
+      color: $tc-gray-0;
+      border-radius: 4px;
+      padding: 9px 24px 11px;
+      background: $tc-dark-blue-110;
+      border-width: 1px !important;
+      border-style: solid !important;
+      border-color: transparent !important;
+      border-image: initial !important;
+      margin-right: 0px;
+      text-align: center;
+      $tc-gray-0-space: nowrap;
+      outline: 0px;
+      position: relative;
+      display: inline-block;
+
+      &:hover {
+        background: $tc-dark-blue-100;
+      }
+    }
+  }
+
+  .linkbubble-link {
+    color: $tc-dark-blue-110 !important;
+  }
+
+  a.linkbubble-link {
+    text-decoration: underline !important;
+  }
+}
